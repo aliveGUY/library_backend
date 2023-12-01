@@ -1,19 +1,15 @@
 const express = require('express')
 const router = express.Router()
+const booksController = require('../controllers/books')
+const verifyJWT = require('../middleware/verifyJWT')
 
-const {
-    getAllBooks,
-    getBookById,
-    postBook,
-    deleteBook,
-    patchBook
-} = require('../controllers/books')
+router.route('/')
+    .get(booksController.getAllBooks)
+    .post(verifyJWT, booksController.postBook)
 
-router
-    .get('/', getAllBooks)
-    .post('/', postBook)
-    .get('/:id', getBookById)
-    .delete('/:id', deleteBook)
-    .patch('/:id', patchBook)
+router.route('/:id')
+    .get(booksController.getBookById)
+    .delete(verifyJWT, booksController.deleteBook)
+    .patch(verifyJWT, booksController.patchBook)
 
 module.exports = router
