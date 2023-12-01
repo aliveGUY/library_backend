@@ -1,13 +1,15 @@
 require('dotenv').config()
 const express = require("express");
 const mongoose = require('mongoose')
-const booksRoutes = require('./routes/books')
 const cors = require('cors')
 const corsOptions = require('./config/corsOptions')
+const cookieParser = require('cookie-parser')
 const app = express()
+const connectDB = require('./config/dbConn')
 
 // middleware
 app.use(express.json())
+app.use(cookieParser())
 app.use(cors(corsOptions))
 app.use((req, res, next) => {
     console.log(req.path, req.method)
@@ -15,20 +17,16 @@ app.use((req, res, next) => {
 })
 
 // routes
-app.use('/books', booksRoutes)
-app.get('/', (req, res) => {
-    res.json({ mssg: "welcome to the app" })
-})
+app.use('/auth', require('./routes/auth'))
+app.use('/books', require('./routes/books'))
+app.use('/users', require('./routes/users'))
+app.get('/', (req, res) => { res.json({ mssg: "welcome to the app" }) })
 
-// connect to db
-mongoose.connect(process.env.DATABASE_URI)
-    .then(() => {
-        // listening
-        app.listen(process.env.PORT, () => {
-            console.log(`connected to db and listening on port ${process.env.PORT}`)
-        })
-    })
-    .catch((err) => {
-        console.log(err)
-    })
+// connect to db and listen
+connectDB()
+mongoose.connection.once('open', () => {
+    app.listen(process.env.PORT, () =>
+        console.log(`DB Connected\nPort Number: ${process.env.PORT}`)
+    )
+})
 
