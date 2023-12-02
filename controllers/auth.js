@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const asyncHandler = require('express-async-handler')
 
-const login = asyncHandler(async (req, res) => {
+const login = async (req, res) => {
     const { username, password } = req.body
 
     if (!username || !password) {
@@ -45,9 +45,11 @@ const login = asyncHandler(async (req, res) => {
         maxAge: 7 * 24 * 60 * 60 * 1000 //cookie expiry: set to match rT
     })
 
+    const resultUser = await User.findById({ _id: foundUser._id }).select('-password').lean()
+
     // Send accessToken containing username and roles 
-    res.json({ accessToken })
-})
+    res.json({ user: resultUser, accessToken })
+}
 
 const refresh = async (req, res) => {
     const cookies = req.cookies
