@@ -51,22 +51,28 @@ const login = async (req, res) => {
     res.json({ user: resultUser, accessToken })
 }
 
-const refresh = async (req, res) => {
+const refresh = (req, res) => {
     const cookies = req.cookies
-    if (!cookies?.jwt) return res.status(401).json({ message: 'Unauthorized' })
+
+    if (!cookies?.jwt) {
+        return res.status(401).json({ message: 'Unauthorized' })
+    }
+
+
 
     const refreshToken = cookies.jwt
 
     jwt.verify(
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET,
-        asyncHandler(async (err, decoded) => {
+        async (err, decoded) => {
             if (err) return res.status(403).json({ message: 'Forbidden' })
 
             const foundUser = await User.findOne({ username: decoded.username }).exec()
+
             if (!foundUser) return res.status(401).json({ message: 'Unauthorized' })
 
-            const accessTolen = jwt.sign(
+            const accessToken = jwt.sign(
                 {
                     "UserInfo": {
                         "username": foundUser.username,
@@ -74,11 +80,14 @@ const refresh = async (req, res) => {
                     }
                 },
                 process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: '10s' }
+                { expiresIn: '15m' }
             )
 
-            res.json({ accessTolen })
-        })
+            const resultUser = await User.findById({ _id: foundUser._id }).select('-password').lean()
+
+            // Send accessToken containing username and roles 
+            res.json({ user: resultUser, accessToken })
+        }
     )
 }
 

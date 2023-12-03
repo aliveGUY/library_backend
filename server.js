@@ -7,20 +7,17 @@ const cookieParser = require('cookie-parser')
 const app = express()
 const connectDB = require('./config/dbConn')
 const credentials = require('./middleware/credentials');
-
+const { logger } = require('./middleware/logger')
 const PORT = process.env.PORT || 4000;
 
 
 // middleware
+app.use(logger)
+app.use(credentials)
 app.use(express.json())
 app.use(cookieParser())
-app.use(credentials)
 app.use(cors(corsOptions))
 app.use(express.urlencoded({ extended: false }))
-app.use((req, res, next) => {
-    console.log(req.path, req.method)
-    next()
-})
 
 // routes
 app.use('/auth', require('./routes/auth'))
