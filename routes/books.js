@@ -13,6 +13,6 @@ router.route('/:id')
     .patch(verifyJWT, booksController.patchBook)
 
 router.route('/added-by/:id')
-    .get(booksController.getBooksByUser)
+    .get(verifyJWT, booksController.getBooksByUser)
 
 module.exports = router
