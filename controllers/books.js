@@ -21,6 +21,21 @@ const getBookById = async (req, res) => {
     res.status(200).json(book)
 }
 
+const getBooksByUser = async (req, res) => {
+    const { id } = req.params
+    let books
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+        books = await Book.find({ user: id }).lean().exec()
+    }
+
+    if (!books) {
+        return res.status(404).json({ error: "no books found" })
+    }
+
+    res.status(200).json(books)
+}
+
 const postBook = async (req, res) => {
     try {
         const book = await Book.create({ ...req.body })
@@ -63,6 +78,7 @@ const patchBook = async (req, res) => {
 module.exports = {
     getAllBooks,
     getBookById,
+    getBooksByUser,
     postBook,
     deleteBook,
     patchBook

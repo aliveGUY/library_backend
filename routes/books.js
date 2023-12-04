@@ -12,4 +12,7 @@ router.route('/:id')
     .delete(verifyJWT, booksController.deleteBook)
     .patch(verifyJWT, booksController.patchBook)
 
+router.route('/added-by/:id')
+    .get(booksController.getBooksByUser)
+
 module.exports = router
