@@ -10,84 +10,68 @@ const login = async (req, res) => {
     }
 
     const foundUser = await User.findOne({ username }).exec()
-
-    if (!foundUser) {
-        return res.status(401).json({ message: 'Unauthorized' })
-    }
+    if (!foundUser) return res.status(401).json({ message: 'Unauthorized' })
 
     const match = await bcrypt.compare(password, foundUser.password)
-
     if (!match) return res.status(401).json({ message: 'Unauthorized' })
+
+    const { _id: id, ...rest } = await User.findOne({ username }).select('-password').lean()
 
     const accessToken = jwt.sign(
         {
-            "UserInfo": {
-                "username": foundUser.username,
-                "id": foundUser._id,
-                "roles": foundUser.roles
-            }
+            "id": id,
         },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: '15m' }
-    )
-
-    const refreshToken = jwt.sign(
-        { "username": foundUser.username },
-        process.env.REFRESH_TOKEN_SECRET,
         { expiresIn: '7d' }
     )
 
     // Create secure cookie with refresh token 
-    res.cookie('jwt', refreshToken, {
+    res.cookie('jwt', accessToken, {
         httpOnly: true, //accessible only by web server 
         secure: true, //https
         sameSite: 'None', //cross-site cookie 
         maxAge: 7 * 24 * 60 * 60 * 1000 //cookie expiry: set to match rT
     })
 
-    const resultUser = await User.findById({ _id: foundUser._id }).select('-password').lean()
-
-    // Send accessToken containing username and roles 
-    res.json({ user: resultUser, accessToken })
+    res.json({ user: { id, ...rest } })
 }
 
 const refresh = (req, res) => {
     const cookies = req.cookies
 
-    if (!cookies?.jwt) {
-        return res.status(401).json({ message: 'Unauthorized' })
-    }
-
-
+    if (!cookies?.jwt) return res.status(401).json({ message: 'Unauthorized' })
 
     const refreshToken = cookies.jwt
 
     jwt.verify(
         refreshToken,
-        process.env.REFRESH_TOKEN_SECRET,
+        process.env.ACCESS_TOKEN_SECRET,
         async (err, decoded) => {
             if (err) return res.status(403).json({ message: 'Forbidden' })
 
-            const foundUser = await User.findOne({ username: decoded.username }).exec()
+            const foundUser = await User.findById(decoded.id).select('-password').lean().exec()
 
             if (!foundUser) return res.status(401).json({ message: 'Unauthorized' })
 
+            const { _id: id, ...rest } = foundUser
+
             const accessToken = jwt.sign(
                 {
-                    "UserInfo": {
-                        "username": foundUser.username,
-                        "id": foundUser._id,
-                        "roles": foundUser.roles
-                    }
+                    "id": id,
                 },
                 process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: '15m' }
+                { expiresIn: '7d' }
             )
+        
+            // Create secure cookie with refresh token 
+            res.cookie('jwt', accessToken, {
+                httpOnly: true, //accessible only by web server 
+                secure: true, //https
+                sameSite: 'None', //cross-site cookie 
+                maxAge: 7 * 24 * 60 * 60 * 1000 //cookie expiry: set to match rT
+            })
 
-            const resultUser = await User.findById({ _id: foundUser._id }).select('-password').lean()
-
-            // Send accessToken containing username and roles 
-            res.json({ user: resultUser, accessToken })
+            res.json({ user: { id, ...rest } })
         }
     )
 }

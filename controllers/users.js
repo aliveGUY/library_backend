@@ -16,8 +16,8 @@ const getUserById = asyncHander(async (req, res) => {
 })
 
 const register = asyncHander(async (req, res) => {
-    const { username, password, roles } = req.body
-    if (!username || !password || !Array.isArray(roles) || !roles.length) {
+    const { username, password } = req.body
+    if (!username || !password) {
         return res.status(400).json({ message: 'All fields are required' })
     }
 
@@ -29,7 +29,11 @@ const register = asyncHander(async (req, res) => {
 
     const hashedPwd = await bcrypt.hash(password, 10)
 
-    const userObject = { username, "password": hashedPwd, roles }
+    const userObject = {
+        username,
+        password: hashedPwd,
+        roles: ["Customer"]
+    }
 
     const user = await User.create(userObject)
 
