@@ -36,6 +36,23 @@ const getBooksByUser = async (req, res) => {
     res.status(200).json(books)
 }
 
+const getBooksSearchResults = async (req, res) => {
+    const { query } = req.body
+
+    const books = await Book.find({
+        $or: [
+            { title: { $regex: query, $options: "i" } },
+            { author: { $regex: query, $options: "i" } }
+        ]
+    })
+
+    if (!books?.length) {
+        return res.status(404).json({ error: "books not found" })
+    }
+
+    res.status(200).json(books)
+}
+
 const postBook = async (req, res) => {
     try {
         const book = await Book.create({ ...req.body })
@@ -81,5 +98,6 @@ module.exports = {
     getBooksByUser,
     postBook,
     deleteBook,
-    patchBook
+    patchBook,
+    getBooksSearchResults
 }

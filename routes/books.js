@@ -7,12 +7,16 @@ router.route('/')
     .get(booksController.getAllBooks)
     .post(verifyJWT, booksController.postBook)
 
+router.route('/added-by/:id')
+    .get(verifyJWT, booksController.getBooksByUser)
+
+router.route('/search')
+    .post(booksController.getBooksSearchResults)
+
 router.route('/:id')
     .get(booksController.getBookById)
     .delete(verifyJWT, booksController.deleteBook)
     .patch(verifyJWT, booksController.patchBook)
 
-router.route('/added-by/:id')
-    .get(verifyJWT, booksController.getBooksByUser)
 
 module.exports = router
