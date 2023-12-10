@@ -29,7 +29,7 @@ const getBooksByUser = async (req, res) => {
         books = await Book.find({ user: id }).lean().exec()
     }
 
-    if (!books) {
+    if (!books.length) {
         return res.status(404).json({ error: "no books found" })
     }
 

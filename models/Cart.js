@@ -11,7 +11,6 @@ const cartSchema = new Schema(
     },
     cart: [{
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
       ref: 'Book'
     }]
   },

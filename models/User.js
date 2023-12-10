@@ -11,10 +11,16 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
+  avatar: {
+    type: String
+  },
+  about: {
+    type: String
+  },
   roles: [{
     type: String,
     default: "Customer" // Customer Employee Admin Owner
-  }]
+  }],
 })
 
 module.exports = mongoose.model('User', userSchema)
