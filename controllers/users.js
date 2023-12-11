@@ -64,12 +64,9 @@ const register = asyncHander(async (req, res) => {
 const deleteUser = asyncHander(async (req, res) => {
     const { id } = req.params
 
-    const book = await Book.findOne({ user: id }).lean().exec()
-    if (book) {
-        return res.status(400).json({ message: 'User has assigned books' })
-    }
-
     const user = await User.findById(id).exec()
+    await Book.deleteMany({ user: id })
+
     if (!user) {
         return res.status(400).json({ message: 'User not found' })
     }

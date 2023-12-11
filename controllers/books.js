@@ -1,5 +1,7 @@
 const Book = require('../models/Book')
 const mongoose = require('mongoose')
+const asyncHander = require('express-async-handler')
+
 
 const getAllBooks = async (req, res) => {
     const books = await Book.find().sort({ createdAt: -1 })
@@ -62,20 +64,21 @@ const postBook = async (req, res) => {
     }
 }
 
-const deleteBook = async (req, res) => {
+const deleteBook = asyncHander(async (req, res) => {
     const { id } = req.params
-    let book
 
-    if (mongoose.Types.ObjectId.isValid(id)) {
-        book = await Book.findOneAndDelete({ _id: id })
-    }
+    const book = await Book.findById(id).exec()
 
     if (!book) {
-        return res.status(404).json({ error: "no such book" })
+        return res.status(400).json({ message: 'Book not found' })
     }
 
-    res.status(200).json(book)
-}
+    const result = await book.deleteOne()
+
+    const reply = `Book ${result.title} with ID ${result._id} deleted`
+
+    res.json(reply)
+})
 
 const patchBook = async (req, res) => {
     const { id } = req.params
