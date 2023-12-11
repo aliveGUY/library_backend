@@ -8,7 +8,7 @@ router.route('/')
     .post(verifyJWT, booksController.postBook)
 
 router.route('/added-by/:id')
-    .get(verifyJWT, booksController.getBooksByUser)
+    .get(booksController.getBooksByUser)
 
 router.route('/search')
     .post(booksController.getBooksSearchResults)
