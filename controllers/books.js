@@ -79,10 +79,11 @@ const deleteBook = async (req, res) => {
 
 const patchBook = async (req, res) => {
     const { id } = req.params
+    const { user, ...userless } = req.body // Book might be updated by Admin. I dont want to loose track of original creator
     let book
 
     if (mongoose.Types.ObjectId.isValid(id)) {
-        book = await Book.findByIdAndUpdate({ _id: id }, { ...req.body })
+        book = await Book.findByIdAndUpdate({ _id: id }, { ...userless })
     }
 
     if (!book) {
