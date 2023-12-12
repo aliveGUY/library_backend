@@ -6,7 +6,7 @@ const router = express.Router()
 router.use(verifyJWT)
 
 router.route('/')
-    .get(cartController.getCart)
+    .post(cartController.getCart)
     .patch(cartController.updateCart)
 
 module.exports = router
