@@ -11,6 +11,11 @@ const getCart = async (req, res) => {
     }
 
     const bookIds = cart.cart;
+
+    
+    if (bookIds.length === 0) {
+      return res.status(200).json({ cart: [] });
+    }
     
     const cartList = await Promise.all(bookIds.map(id => Book.findById(id).exec()));
 
