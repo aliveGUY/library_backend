@@ -11,7 +11,22 @@ const getAllUsers = asyncHander(async (req, res) => {
     if (!users?.length) {
         return res.status(400).json({ message: 'No users found' })
     }
-    res.json(users)
+
+    const usersStats = await Promise.all(users.map(async (user) => {
+        let fundCart = await Cart.findOne({ user: user._id }).lean().exec();
+        let foundBooks = await Book.find({ user: user._id }).lean().exec();
+
+        if (!fundCart) {
+            fundCart = await Cart.create({ user: user._id });
+        }
+
+        user.cartStats = fundCart.cart.length;
+        user.bookStats = foundBooks.length;
+
+        return user;
+    }))
+
+    res.json(usersStats)
 })
 
 const getUserById = asyncHander(async (req, res) => {
@@ -66,6 +81,7 @@ const deleteUser = asyncHander(async (req, res) => {
 
     const user = await User.findById(id).exec()
     await Book.deleteMany({ user: id })
+    await Cart.deleteOne({ user: id })
 
     if (!user) {
         return res.status(400).json({ message: 'User not found' })
