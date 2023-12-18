@@ -75,6 +75,8 @@ const deleteBook = asyncHander(async (req, res) => {
 
     const result = await book.deleteOne()
 
+    await Cart.updateMany({ cart: id }, { $pull: { cart: id } })
+
     const reply = `Book ${result.title} with ID ${result._id} deleted`
 
     res.json(reply)

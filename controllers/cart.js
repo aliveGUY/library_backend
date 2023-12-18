@@ -12,11 +12,11 @@ const getCart = async (req, res) => {
 
     const bookIds = cart.cart;
 
-    
+
     if (bookIds.length === 0) {
       return res.status(200).json({ cart: [] });
     }
-    
+
     const cartList = await Promise.all(bookIds.map(id => Book.findById(id).exec()));
 
     res.status(200).json({ cart: cartList });
@@ -29,7 +29,7 @@ const getCart = async (req, res) => {
 const updateCart = async (req, res) => {
   const { cart, user } = req.body;
 
-  const ids = cart.map(book => book._id);
+  const ids = cart.length > 0 ? cart.map(book => book._id) : []
 
   try {
     const updatedCart = await Cart.findOneAndUpdate(
